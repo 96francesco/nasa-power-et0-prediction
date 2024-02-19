@@ -1,14 +1,8 @@
-# local package
--e .
-
-# external requirements
-torch
 pytorch-lightning
 pandas
 numpy
 matplotlib
 scikit-learn
 optuna
-torchmetrics
 tensorboard
 openpyxl

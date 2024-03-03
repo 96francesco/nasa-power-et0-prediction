@@ -14,7 +14,7 @@ from data.nasa_power_datamodule import NASAPOWERDataModule
 def objective(trial):
       # parameters to optimize
       lr = trial.suggest_float('lr', 1e-5, 1e-1)
-      batch_size = trial.suggest_categorical('batch_size', [8, 16, 32, 64])
+      batch_size = trial.suggest_categorical('batch_size', [8, 16, 32])
       optimizer = trial.suggest_categorical('optimizer', ['adam', 'sgd'])
       weight_decay = trial.suggest_float('weight_decay', 1e-10, 1e-3)
       dropout_rate = trial.suggest_float('dropout_rate', 0.0, 0.5)
@@ -33,9 +33,9 @@ def objective(trial):
                                         batch_size=batch_size)
 
       # initialize PL trainer
-      trainer = pl.Trainer(max_epochs=50,
+      trainer = pl.Trainer(max_epochs=20,
                            logger=False,
-                           enable_progress_bar=False,
+                           enable_progress_bar=True,
                            enable_checkpointing=False,
                            accelerator='gpu',
                            devices=1)

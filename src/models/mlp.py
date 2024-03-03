@@ -28,12 +28,14 @@ class MLP(nn.Module):
           (dropout): Dropout(p=0.5, inplace=False)
         )
     """
-    def __init__(self, input_size=11):
+    def __init__(self, input_size=11, dropout_rate=0.5):
         super(MLP, self).__init__()
+        self.dropout_rate = dropout_rate
+
         self.fc1 = nn.Linear(input_size, 256)
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 1)
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(self.dropout_rate)
         self.relu = nn.ReLU()
 
     def forward(self, x):

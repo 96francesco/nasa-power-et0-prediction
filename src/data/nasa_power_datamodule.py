@@ -63,7 +63,7 @@ class NASAPOWERDataModule(pl.LightningDataModule):
         df_test = pd.read_excel(self.test_dir)
         X_test = df_test.drop('ET', axis=1).values
         y_test = df_test['ET'].values
-        X_test_scaled = scaler.transform(X_test) # !!!
+        X_test_scaled = scaler.transform(X_test)
         self.X_test = torch.tensor(X_test_scaled, dtype=torch.float32)
         self.y_test = torch.tensor(y_test, dtype=torch.float32).unsqueeze(-1)
 
@@ -76,12 +76,12 @@ class NASAPOWERDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size,
-                          num_workers=1)
+                          num_workers=15)
 
     def val_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size,
-                          num_workers=1)
+                          num_workers=15)
 
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size,
-                          num_workers=1)
+                          num_workers=15)

@@ -68,7 +68,9 @@ class LitModel(pl.LightningModule):
         self.log('val_loss', loss,
                  prog_bar=True, on_step=False,
                  on_epoch=True)
-        self.log('val_r2', r2_score(y.cpu().numpy(), y_pred.cpu().numpy()))
+        self.log('val_r2', r2_score(y.cpu().numpy(), y_pred.cpu().numpy()),
+                 prog_bar=True, on_step=False,
+                 on_epoch=True)
         return loss
 
     def test_step(self, batch, batch_idx):

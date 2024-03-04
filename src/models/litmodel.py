@@ -6,22 +6,24 @@ import pytorch_lightning as pl
 from sklearn.metrics import r2_score, mean_squared_error
 from torch.optim.lr_scheduler import StepLR
 
+from models.mlp import MLP
+
 class LitModel(pl.LightningModule):
     """
     A PyTorch Lightning module for training and evaluating models using NASA POWER data.
     
-    This class encapsulates the model architecture, data handling, training loop, and validation
-    loop within the PyTorch Lightning framework, allowing for cleaner code and easier scalability.
-    It supports dynamic selection of optimizers and learning rate schedulers, and it includes 
-    functionality for calculating custom metrics during the test phase.
-    
+    This class encapsulates the model architecture, data handling, training loop, validation
+    loop, and testing loop within the PyTorch Lightning framework. It supports dynamic 
+    selection of optimizers, learning rate schedulers, and the ability to load the model 
+    from a checkpoint for continued training or inference.
+
     Attributes:
         model (torch.nn.Module): The neural network model.
-        loss_fn (Callable): The loss function used for training.
-        lr (float): Initial learning rate for the optimizer.
-        weight_decay (float): Weight decay (L2 penalty) for the optimizer.
+        lr (float): Learning rate for the optimizer.
         optimizer_name (str): Name of the optimizer to use ('adam', 'sgd', etc.).
-        
+        weight_decay (float): Weight decay (L2 penalty) for the optimizer.
+        checkpoint_path (str, optional): Path to the checkpoint file from which model weights will be loaded.
+
     Methods:
         forward(x): Implements the forward pass of the model.
         training_step(batch, batch_idx): Processes a single batch during training.
@@ -29,13 +31,19 @@ class LitModel(pl.LightningModule):
         test_step(batch, batch_idx): Processes a single batch during testing.
         configure_optimizers(): Sets up the optimizer and learning rate scheduler.
     """
-    def __init__(self, model, lr=0.01, optimizer='sgd', weight_decay=1e-5):
+    def __init__(self, model=None, lr=0.01, optimizer='sgd', weight_decay=1e-5):
         super().__init__()
         self.model = model
         self.learning_rate = lr
         self.weight_decay = weight_decay
         self.test_outputs = []
         self.save_hyperparameters()
+
+        # load from checkpoint if path is provided
+        if model is None:
+            # initalize model
+            self.model = MLP(input_size=11)
+            pass
 
         if optimizer == 'sgd':
                 self.optimizer = torch.optim.SGD

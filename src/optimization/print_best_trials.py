@@ -1,10 +1,10 @@
 import optuna
 
 # database file path
-db_file_path = 'sqlite:///'
+db_file_path = 'sqlite:////home/francesco/nasa_power_et0_prediction/src/optimization/optimization.db'
 
 # load the study
-study = optuna.load_study(study_name='', storage=db_file_path)
+study = optuna.load_study(study_name='mlp_optimization', storage=db_file_path)
 
 # retrieve the best trials
 pareto_front_trials = study.best_trials

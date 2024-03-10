@@ -1,57 +1,34 @@
-import pytorch_lightning as pl
-import matplotlib.pyplot as plt
+import torch
+import pandas as pd
 
+from sklearn.preprocessing import StandardScaler
 from pytorch_lightning import seed_everything
-
-# import custom modules
-from data.nasa_power_datamodule import NASAPOWERDataModule
-from models.litmodel import LitModel
-from models.mlp import MLP
 
 # set seeds for reproducibility
 seed_everything(1996, workers=True)
 
-# define dataset directory
-train_dir = 'data/train_set.xlsx'
-test_dir = 'data/test_set.xlsx'
-
-# define model and data module
-epochs = 50
-data_module = NASAPOWERDataModule(train_dir=train_dir, test_dir=test_dir, batch_size=16)
-
-# load model
-filename = 'mlp-optimized-trial13-epoch=37-val_loss=0.35.ckpt'
-model = LitModel.load_from_checkpoint(checkpoint_path=f'models/checkpoints/{filename}')
-print(model.hparams)
-
-
-# set the model for evaluation
+# import model and set it to evaluation mode
+model = torch.load('models/full_model_mlp-optimized-trial33-epoch=33-val_loss=0.35-val_r2=0.88.ckpt.pth')
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
 model.eval()
-model.freeze()
 
-# test the model
-trainer = pl.Trainer()
-trainer.test(model, data_module)
+# load and scale dataset to predict
+df = pd.read_excel("data/prova.xlsx")
+scaler = StandardScaler()
+df_scaled = scaler.fit_transform(df)
 
-# extract predictions and actual observations
-y_test_predictions = model.predictions
-y_test_actual = model.actuals
+# convert the dataset to a tensor and sennd it to the device
+dataset_tensor = torch.tensor(df_scaled, dtype=torch.float32)
+dataset_tensor = dataset_tensor.to(device)
 
-# make plots
-plt.figure(figsize=(6, 6))
-plt.scatter(model.actuals, model.predictions, alpha=0.5)
-plt.xlabel('Predicted ETo (mm/day)', fontsize=12)
-plt.ylabel('Observed ETo (mm/day)', fontsize=12)
-plt.title('Predicted vs Observed (Testing)', fontsize=16)
-plt.plot([min(model.actuals), max(model.actuals)], 
-         [min(model.actuals), max(model.actuals)], 
-         'r--')
+# do predictions
+with torch.no_grad():
+    predictions = model(dataset_tensor)
 
-# put metrics in the plot
-metrics_text = '\n'.join([f'{key}: {value:.2f}' for key, value in model.metrics.items()])
-plt.annotate(metrics_text, xy=(0.05, 0.8), 
-             xycoords='axes fraction', 
-             bbox=dict(boxstyle="round", 
-                       fc="w"))
-plt.savefig(f'reports/figures/output/output_{filename}.png')
-plt.show()
+predictions_df = pd.DataFrame(predictions.cpu().numpy(), columns=['predicted_ET0'])
+
+# export predictions
+predictions_df.index = df.index
+final_df = pd.concat([df, predictions_df], axis=1) # concantenate predictions with features
+final_df.to_excel("models/predictions.xlsx")

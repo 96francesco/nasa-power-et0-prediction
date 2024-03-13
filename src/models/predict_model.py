@@ -1,34 +1,53 @@
 import torch
 import pandas as pd
+import os
 
 from sklearn.preprocessing import StandardScaler
 from pytorch_lightning import seed_everything
+
+# define dataset and output directory
+dataset_directory = 'data/df_spain'
+output_directory = 'models/predictions/predictions_spain'
 
 # set seeds for reproducibility
 seed_everything(1996, workers=True)
 
 # import model and set it to evaluation mode
-model = torch.load('models/full_model_mlp-optimized-trial33-epoch=33-val_loss=0.35-val_r2=0.88.ckpt.pth')
+model = torch.load('models/full_model_mlp.pth')
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 model.eval()
 
-# load and scale dataset to predict
-df = pd.read_excel("data/prova.xlsx")
+# define scaler
 scaler = StandardScaler()
-df_scaled = scaler.fit_transform(df)
 
-# convert the dataset to a tensor and sennd it to the device
-dataset_tensor = torch.tensor(df_scaled, dtype=torch.float32)
-dataset_tensor = dataset_tensor.to(device)
+# iterate over the files in the dataset directory
+for filename in os.listdir(dataset_directory):
+    if filename.endswith(".csv"): 
+        file_path = os.path.join(dataset_directory, filename)
+        
+        # load and process dataset to predict
+        df = pd.read_csv(file_path)
+        original_columns = df.iloc[:, :7]
+        features = df.iloc[:, 7:]
+        features_scaled = scaler.fit_transform(features)
+        
+        # convert the features to a tensor and send it to the device
+        features_tensor = torch.tensor(features_scaled, dtype=torch.float32)
+        features_tensor = features_tensor.to(device)
+        
+        # run predictions
+        with torch.no_grad():
+            predictions = model(features_tensor)
+        
+        # convert predictions to DataFrame
+        predictions_df = pd.DataFrame(predictions.cpu().numpy(), columns=['predicted_ET0'])
+        
+        # concatenate the original columns with predictions
+        final_df = pd.concat([original_columns, predictions_df], axis=1)
+        
+        # save the file
+        output_file_path = os.path.join(output_directory, f'predictions_{filename}')
+        final_df.to_csv(output_file_path, index=False)
 
-# do predictions
-with torch.no_grad():
-    predictions = model(dataset_tensor)
-
-predictions_df = pd.DataFrame(predictions.cpu().numpy(), columns=['predicted_ET0'])
-
-# export predictions
-predictions_df.index = df.index
-final_df = pd.concat([df, predictions_df], axis=1) # concantenate predictions with features
-final_df.to_excel("models/predictions.xlsx")
+print("Predictions finished.")

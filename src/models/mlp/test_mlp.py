@@ -6,7 +6,7 @@ from pytorch_lightning import seed_everything
 
 # import custom modules
 from data.nasa_power_datamodule import NASAPOWERDataModule
-from models.litmodel import LitModel
+from models.mlp.litmodel import LitModel
 from models.mlp import MLP
 
 # set seeds for reproducibility

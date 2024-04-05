@@ -8,8 +8,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 # import custom modules
 from data.nasa_power_datamodule import NASAPOWERDataModule
-from models.mlp import MLP
-from models.litmodel import LitModel
+from models.mlp.mlp import MLP
+from models.mlp.litmodel import LitModel
 
 # set seeds for reproducibility
 seed_everything(1996, workers=True)
@@ -29,14 +29,14 @@ test_dir = 'data/test_set.xlsx'
 
 # define model and data module
 epochs = 50
-data_module = NASAPOWERDataModule(train_dir=train_dir, test_dir=test_dir, batch_size=32)
-mlp_instance = MLP(input_size=11, dropout_rate=0.0017917784324016656)
+data_module = NASAPOWERDataModule(train_dir=train_dir, test_dir=test_dir, batch_size=8)
+mlp_instance = MLP(input_size=11, dropout_rate=0.026226075828239083)
 model = LitModel(mlp_instance,
-                 lr=0.0061020681060527885,
+                 lr=0.002334575812078728,
                  optimizer='adam',
-                 weight_decay=1.3455019173512806e-07)
+                 weight_decay=3.601652384566776e-08)
 
-filename = "mlp-optimized-trial13-{epoch:02d}-{val_loss:.2f}-{val_r2:.2f}"
+filename = "mlp-optimized-trial33-{epoch:02d}-{val_loss:.2f}-{val_r2:.2f}"
 
 # define callabacks
 early_stop_callback = EarlyStopping(monitor="val_loss",

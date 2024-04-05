@@ -6,8 +6,8 @@ from sklearn.preprocessing import StandardScaler
 from pytorch_lightning import seed_everything
 
 # define dataset and output directory
-dataset_directory = 'data/df_spain'
-output_directory = 'models/predictions/predictions_spain'
+dataset_directory = 'data/andalucia'
+output_directory = 'data/andalucia/predictions'
 
 # set seeds for reproducibility
 seed_everything(1996, workers=True)

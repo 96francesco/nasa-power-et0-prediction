@@ -1,15 +1,17 @@
 # import libraries
 import pytorch_lightning as pl
 import optuna
-import torch
 
 from optuna.samplers import TPESampler
 from optuna.pruners import MedianPruner
+from pytorch_lightning import seed_everything
 
-from models.litmodel import LitModel
-from models.mlp import MLP
+# import custom modules and classes
+from models.mlp.litmodel import LitModel
+from models.mlp.mlp import MLP
 from data.nasa_power_datamodule import NASAPOWERDataModule
 
+seed_everything(1996, workers=True)
 
 def objective(trial):
       # parameters to optimize
@@ -27,6 +29,7 @@ def objective(trial):
       mlp_instance = MLP(input_size=11, dropout_rate=dropout_rate)
       model = LitModel(mlp_instance, lr=lr, optimizer=optimizer, weight_decay=weight_decay)
 
+      # load data and define data module
       train_dir = 'data/train_set.xlsx'
       test_dir = 'data/test_set.xlsx'
       data_module = NASAPOWERDataModule(train_dir=train_dir, test_dir=test_dir,

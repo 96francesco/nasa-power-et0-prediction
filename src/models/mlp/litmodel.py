@@ -73,13 +73,27 @@ class LitModel(pl.LightningModule):
         x, y = val_batch
         y_pred = self(x)
         loss = nn.MSELoss()(y_pred, y)
-        self.log('val_loss', loss,
-                 prog_bar=True, on_step=False,
-                 on_epoch=True)
-        self.log('val_r2', r2_score(y.cpu().numpy(), y_pred.cpu().numpy()),
-                 prog_bar=True, on_step=False,
-                 on_epoch=True)
+        self.log('val_loss', loss, prog_bar=True, on_step=False, on_epoch=True)
+        
+        # collect batch's outputs for use in on_validation_epoch_end
+        if not hasattr(self, 'validation_outputs'):
+            self.validation_outputs = []
+        self.validation_outputs.append({'preds': y_pred.detach(), 'targets': y.detach()})
+        
         return loss
+
+       
+    def on_validation_epoch_end(self):
+        # access the validation step outputs stored in self during validation_step
+        preds = torch.cat([x['preds'] for x in self.validation_outputs], dim=0)
+        targets = torch.cat([x['targets'] for x in self.validation_outputs], dim=0)
+
+        # calculate the R2 value over all validation outputs
+        r2 = r2_score(targets.cpu().numpy(), preds.cpu().numpy())
+        self.log('val_r2', r2, prog_bar=True, logger=True)
+
+        self.validation_outputs = []
+
 
     def test_step(self, batch, batch_idx):
         x, y = batch

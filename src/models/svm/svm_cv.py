@@ -26,7 +26,7 @@ rmse_scores = []
 nrmse_scores = []
 r2_scores = []
 
-# define model with
+# define model with best hparams configuration identified
 model = SVR(
     C=70.50630937484068,
     kernel='rbf', 

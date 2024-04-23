@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 
@@ -23,15 +23,15 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# initialize and fit RF model
-model = RandomForestRegressor(
-      criterion='squared_error',
-      n_estimators=160,  
-      max_depth=32,
-      min_samples_split=15,
-      min_samples_leaf=5,
-      random_state=seed
+# define model with best hparams configuration identified
+model = SVR(
+    C=70.50630937484068,
+    kernel='rbf', 
+    gamma='scale',
+    epsilon=0.3326181470372891 
 )
+
+# fit model
 model.fit(X_train_scaled, y_train)
 
 # calculate metrics on the training set
@@ -62,7 +62,7 @@ plt.plot([y_train.min(), y_train.max()], [y_train.min(), y_train.max()], 'r--')
 metrics_text_training = f'R2: {train_r2:.2f}\nRMSE: {train_rmse:.2f}\nnRMSE: {train_nrmse:.2f}'
 plt.annotate(metrics_text_training, xy=(0.05, 0.8), xycoords='axes fraction',
               bbox=dict(boxstyle="round", fc="w"))
-plt.savefig('reports/figures/output/rf_model_training.png')
+plt.savefig('reports/figures/output/svm_model_training.png')
 plt.show()
 
 # plot for the test set
@@ -75,5 +75,5 @@ plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')
 metrics_text_testing = f'R2: {test_r2:.2f}\nRMSE: {test_rmse:.2f}\nnRMSE: {test_nrmse:.2f}'
 plt.annotate(metrics_text_testing, xy=(0.05, 0.8), xycoords='axes fraction', 
              bbox=dict(boxstyle="round", fc="w"))
-plt.savefig('reports/figures/output/rf_model_testing.png')
+plt.savefig('reports/figures/output/svm_model_testing.png')
 plt.show()

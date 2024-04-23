@@ -118,7 +118,7 @@ class LitModel(pl.LightningModule):
         # Calculate metrics
         r2 = r2_score(y_true_np, y_pred_np)
         rmse = mean_squared_error(y_true_np, y_pred_np, squared=False)
-        nrmse = rmse / np.mean(y_true_np)
+        nrmse = rmse / (y_true_np.max() - y_true_np.min())
 
         # log metrics
         self.log('test_r2', r2)

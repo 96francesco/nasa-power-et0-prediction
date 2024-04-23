@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import numpy as np
 import pytorch_lightning as pl
 
 from sklearn.metrics import r2_score, mean_squared_error
@@ -20,9 +19,8 @@ class LitModel(pl.LightningModule):
     Attributes:
         model (torch.nn.Module): The neural network model.
         lr (float): Learning rate for the optimizer.
-        optimizer_name (str): Name of the optimizer to use ('adam', 'sgd', etc.).
+        optimizer (str): Name of the optimizer to use ('adam', 'sgd').
         weight_decay (float): Weight decay (L2 penalty) for the optimizer.
-        checkpoint_path (str, optional): Path to the checkpoint file from which model weights will be loaded.
 
     Methods:
         forward(x): Implements the forward pass of the model.
@@ -82,7 +80,6 @@ class LitModel(pl.LightningModule):
         
         return loss
 
-       
     def on_validation_epoch_end(self):
         # access the validation step outputs stored in self during validation_step
         preds = torch.cat([x['preds'] for x in self.validation_outputs], dim=0)
@@ -93,7 +90,6 @@ class LitModel(pl.LightningModule):
         self.log('val_r2', r2, prog_bar=True, logger=True)
 
         self.validation_outputs = []
-
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -111,11 +107,11 @@ class LitModel(pl.LightningModule):
         y_pred = torch.cat([tmp['y_pred'] for tmp in all_outputs], dim=0)
         y_true = torch.cat([tmp['y_true'] for tmp in all_outputs], dim=0)
 
-        # Convert to numpy arrays for calculation with sklearn
+        # convert to numpy arrays for calculation with sklearn
         y_pred_np = y_pred.cpu().numpy()
         y_true_np = y_true.cpu().numpy()
 
-        # Calculate metrics
+        # calculate metrics
         r2 = r2_score(y_true_np, y_pred_np)
         rmse = mean_squared_error(y_true_np, y_pred_np, squared=False)
         nrmse = rmse / (y_true_np.max() - y_true_np.min())
@@ -136,5 +132,8 @@ class LitModel(pl.LightningModule):
         optimizer = self.optimizer(self.model.parameters(),
                                     lr=self.learning_rate,
                                     weight_decay=self.weight_decay)
+        
+        # set up learning rate scheduler
         scheduler = StepLR(optimizer, step_size=5, gamma=0.1)
+        
         return [optimizer], [scheduler]

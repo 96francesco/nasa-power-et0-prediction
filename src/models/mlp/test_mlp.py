@@ -7,7 +7,6 @@ from pytorch_lightning import seed_everything
 # import custom modules
 from data.nasa_power_datamodule import NASAPOWERDataModule
 from models.mlp.litmodel import LitModel
-from models.mlp import MLP
 
 # set seeds for reproducibility
 seed_everything(1996, workers=True)
@@ -23,7 +22,6 @@ data_module = NASAPOWERDataModule(train_dir=train_dir, test_dir=test_dir, batch_
 filename = 'mlp-optimized-trial33-epoch=33-val_loss=0.35-val_r2=0.88.ckpt'
 model = LitModel.load_from_checkpoint(checkpoint_path=f'models/checkpoints/{filename}')
 print(model.hparams)
-
 
 # set the model for evaluation
 model.eval()
@@ -57,5 +55,5 @@ plt.annotate(metrics_text, xy=(0.05, 0.8),
              xycoords='axes fraction', 
              bbox=dict(boxstyle="round", 
                        fc="w"))
-plt.savefig(f'reports/figures/output/output_{filename}.png')
+plt.savefig(f'reports/figures/output/mlp_model_testing.png')
 plt.show()
